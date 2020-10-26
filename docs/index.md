@@ -8,8 +8,15 @@ expect to hide or remove this repository after December 2020.
 
 ### Week 1
 
-* Ipsum lorem...
-* Ipsum lorem
+* Created IODS-project repository
+* Installed r and Rstudio on Ubuntu 20.04 (Linux).  Initially Rstudio
+  crashed when started, but installing latest updates and rebooting
+  fixed the problem.
+* This week's assignments were stuff I am very familiar with.
+* The actual information on the lecture could have been presented much
+  faster. I will probably read the information from the book/web
+  pages/transcripts in the coming weeks rather than listening to
+  lectures.
 
 ### Week 2
 
