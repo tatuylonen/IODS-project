@@ -8,11 +8,12 @@ expect to hide or remove this repository after December 2020.
 
 ### Week 1
 
+Thoughts after the first week:
 * Created IODS-project repository
-* Installed r and Rstudio on Ubuntu 20.04 (Linux).  Initially Rstudio
-  crashed when started, but installing latest updates and rebooting
-  fixed the problem.
-* This week's assignments were stuff I am very familiar with.
+* Installed R and Rstudio on Ubuntu 20.04 (Linux).  Rstudio (latest
+  1.3.1093) keeps crashing very frequenty.  R seems to work.  For now
+  I'm using Rscript to generate HTML from the .Rmd files.
+* I've used github for years so that part was easy.
 * Rstudio did not clone the github repository as I would like.  It did not
   store the username in the cloned repository correctly. Thus manual
   ``git pull`` or ``git push`` did not work properly with SSH keys (it asked

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Must first install tufte, with: Rscript "install.packages('tufte')"
+# Must first install tidyverse, with: Rscript "install.packages('tidyverse')"
+
+knit() {
+  if test "x$1" = "x"; then echo "knit missing file basename"; exit 1; fi
+  Rscript -e "library(rmarkdown); rmarkdown::render('$1.Rmd', 'html_document');"
+}
+
+knit index
+#knit chapter1
