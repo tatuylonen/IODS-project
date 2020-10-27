@@ -14,4 +14,4 @@ Links to my repositories and web pages for the class:
 
 * Github account: https://github.com/tatuylonen
 * Github repository for this course: https://github.com/tatuylonen/IODS-project
-* Github web page for the course diary: https://tatuylonen.github.com/IODS-project
+* Github web page for the course diary: https://tatuylonen.github.io/IODS-project
