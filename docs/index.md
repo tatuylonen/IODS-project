@@ -9,6 +9,7 @@ expect to hide or remove this repository after December 2020.
 ### Week 1
 
 Thoughts after the first week:
+
 * Created IODS-project repository
 * Installed R and Rstudio on Ubuntu 20.04 (Linux).  Rstudio (latest
   1.3.1093) keeps crashing very frequenty.  R seems to work.  For now
@@ -18,7 +19,7 @@ Thoughts after the first week:
   store the username in the cloned repository correctly. Thus manual
   ``git pull`` or ``git push`` did not work properly with SSH keys (it asked
   for git username and password).  I had to tweak it manually to make
-  keys work correctly.
+  SSH keys work correctly.
 * The actual information on the lecture could have been presented much
   faster. I will probably read the information from the book/web
   pages/transcripts in the coming weeks rather than listening to

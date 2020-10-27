@@ -15,8 +15,3 @@ Links to my repositories and web pages for the class:
 * Github account: https://github.com/tatuylonen
 * Github repository for this course: https://github.com/tatuylonen/IODS-project
 * Github web page for the course diary: https://tatuylonen.github.com/IODS-project
-
-***I'm having some serious problems with Rstudio on Ubuntu 20.04
-   (Linux).  It keeps hanging after couple of minutes of use, or when
-   I try to do almost anything in it.  I installed latest Rstudio
-   1.3.1093 from rstudio.com.  IT IS UNUSABLE.***
