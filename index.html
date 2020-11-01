@@ -483,6 +483,16 @@ summary {
 <h2>Chapter 2: Regression and model validation</h2>
 <div id="analysis" class="section level3">
 <h3>Analysis</h3>
+<p>XXX TODO:</p>
+<ul>
+<li>Describe the dataset, mention where it can be found. <a href="https://www.mv.helsinki.fi/home/kvehkala/JYTmooc/JYTOPKYS3-meta.txt" class="uri">https://www.mv.helsinki.fi/home/kvehkala/JYTmooc/JYTOPKYS3-meta.txt</a> and <a href="http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/learning2014.txt" class="uri">http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/learning2014.txt</a></li>
+<li>Describe its structure and dimensions</li>
+<li>Show a graphical overview of the data and show summaries of the variables in the data.</li>
+<li>Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them.</li>
+<li>Choose three variables as explanatory variables and fit a regression model where exam points is the target (dependent) variable. Show a summary of the fitted model and comment and interpret the results. Explain and interpret the statistical test related to the model parameters. If an explanatory variable in your model does not have a statistically significant relationship with the target variable, remove the variable from the model and fit the model again without it.</li>
+<li>Using a summary of your fitted model, explain the relationship between the chosen explanatory variables and the target variable (interpret the model parameters). Explain and interpret the multiple R squared of the model.</li>
+<li>Produce the following diagnostic plots: Residuals vs. Fitted values, Normal QQ-plot and Residuals vs. Leverage. Explain the assumptions of the model and interpret the validity of those assumptions based on the diagnostic plots.</li>
+</ul>
 <p><em>Describe the work you have done this week and summarize your learning.</em></p>
 <ul>
 <li>Describe your work and results clearly.</li>
@@ -490,12 +500,12 @@ summary {
 <li>Assume the reader has no previous knowledge of your data or the more advanced methods you are using.</li>
 </ul>
 </div>
-<div id="code-and-output-for-the-analysis-exercise" class="section level3">
-<h3>Code and output for the analysis exercise</h3>
+<div id="code-and-output-for-the-data-wrangling-exercise" class="section level3">
+<h3>Code and output for the data wrangling exercise</h3>
 <p>Here is code and output from data/create_learning2014.R:</p>
 <pre class="r"><code># Tatu Ylönen / University of Helsinki
 # 1.11.2020
-# RStudio Exercise 2 - data creation
+# RStudio Exercise 2 - data wrangling
 
 # This uses the data set described in:
 # Kimmo Vehkalahti: ASSIST 2014 - Phase 3 (end of Part 2), N=183
@@ -603,17 +613,12 @@ surface_columns &lt;- select(data, one_of(surface_questions))
 data$surf &lt;- rowMeans(surface_columns)
 strategic_columns &lt;- select(data, one_of(strategic_questions))
 data$stra = rowMeans(strategic_columns)
-# The exercise instruction don&#39;t expressly say what &quot;age&quot; and &quot;points&quot; should
-# be.  Should they be Age and Points, or should they be scaled down similar
-# to Attitude, even though that was not shown in DataCamp.  I&#39;m guessing that
-# they are to be scaled in the same way, as the exercise talks about scaling
-# all combination variables to the original scale.
-data$age = data$Age / 10
-data$points = data$Points / 10
 
 # Select only the desired fields for the analysis data set
-anal &lt;- select(data, c(&quot;gender&quot;, &quot;age&quot;, &quot;attitude&quot;, &quot;deep&quot;, &quot;stra&quot;, &quot;surf&quot;,
-                       &quot;points&quot;))
+anal &lt;- select(data, c(&quot;gender&quot;, &quot;Age&quot;, &quot;attitude&quot;, &quot;deep&quot;, &quot;stra&quot;, &quot;surf&quot;,
+                       &quot;Points&quot;))
+colnames(anal)[2] &lt;- &quot;age&quot;
+colnames(anal)[7] &lt;- &quot;points&quot;
 # Exclude observations where the exam points variable is zero from the
 # analysis data set
 anal &lt;- filter(anal, points != 0)
@@ -624,12 +629,12 @@ print(&quot;=== analysis dataset&quot;)</code></pre>
 <pre class="r"><code>str(anal)</code></pre>
 <pre><code>## &#39;data.frame&#39;:    166 obs. of  7 variables:
 ##  $ gender  : Factor w/ 2 levels &quot;F&quot;,&quot;M&quot;: 1 2 1 2 2 1 2 1 2 1 ...
-##  $ age     : num  5.3 5.5 4.9 5.3 4.9 3.8 5 3.7 3.7 4.2 ...
+##  $ age     : int  53 55 49 53 49 38 50 37 37 42 ...
 ##  $ attitude: num  3.7 3.1 2.5 3.5 3.7 3.8 3.5 2.9 3.8 2.1 ...
 ##  $ deep    : num  3.58 2.92 3.5 3.5 3.67 ...
 ##  $ stra    : num  3.38 2.75 3.62 3.12 3.62 ...
 ##  $ surf    : num  2.58 3.17 2.25 2.25 2.83 ...
-##  $ points  : num  2.5 1.2 2.4 1 2.2 2.1 2.1 3.1 2.4 2.6 ...</code></pre>
+##  $ points  : int  25 12 24 10 22 21 21 31 24 26 ...</code></pre>
 <pre class="r"><code># Write the analysis data set into a file
 write.csv(anal, &quot;data/analysis-dataset.csv&quot;)
 
@@ -641,22 +646,22 @@ print(&quot;=== structure of the readback dataset&quot;)</code></pre>
 <pre><code>## &#39;data.frame&#39;:    166 obs. of  8 variables:
 ##  $ X       : int  1 2 3 4 5 6 7 8 9 10 ...
 ##  $ gender  : Factor w/ 2 levels &quot;F&quot;,&quot;M&quot;: 1 2 1 2 2 1 2 1 2 1 ...
-##  $ age     : num  5.3 5.5 4.9 5.3 4.9 3.8 5 3.7 3.7 4.2 ...
+##  $ age     : int  53 55 49 53 49 38 50 37 37 42 ...
 ##  $ attitude: num  3.7 3.1 2.5 3.5 3.7 3.8 3.5 2.9 3.8 2.1 ...
 ##  $ deep    : num  3.58 2.92 3.5 3.5 3.67 ...
 ##  $ stra    : num  3.38 2.75 3.62 3.12 3.62 ...
 ##  $ surf    : num  2.58 3.17 2.25 2.25 2.83 ...
-##  $ points  : num  2.5 1.2 2.4 1 2.2 2.1 2.1 3.1 2.4 2.6 ...</code></pre>
+##  $ points  : int  25 12 24 10 22 21 21 31 24 26 ...</code></pre>
 <pre class="r"><code>print(&quot;=== head of the readback dataset&quot;)</code></pre>
 <pre><code>## [1] &quot;=== head of the readback dataset&quot;</code></pre>
 <pre class="r"><code>head(readback)</code></pre>
 <pre><code>##   X gender age attitude     deep  stra     surf points
-## 1 1      F 5.3      3.7 3.583333 3.375 2.583333    2.5
-## 2 2      M 5.5      3.1 2.916667 2.750 3.166667    1.2
-## 3 3      F 4.9      2.5 3.500000 3.625 2.250000    2.4
-## 4 4      M 5.3      3.5 3.500000 3.125 2.250000    1.0
-## 5 5      M 4.9      3.7 3.666667 3.625 2.833333    2.2
-## 6 6      F 3.8      3.8 4.750000 3.625 2.416667    2.1</code></pre>
+## 1 1      F  53      3.7 3.583333 3.375 2.583333     25
+## 2 2      M  55      3.1 2.916667 2.750 3.166667     12
+## 3 3      F  49      2.5 3.500000 3.625 2.250000     24
+## 4 4      M  53      3.5 3.500000 3.125 2.250000     10
+## 5 5      M  49      3.7 3.666667 3.625 2.833333     22
+## 6 6      F  38      3.8 4.750000 3.625 2.416667     21</code></pre>
 </div>
 <div id="summary-of-the-work-done-this-week-and-lessons-learned" class="section level3">
 <h3>Summary of the work done this week and lessons learned</h3>
@@ -666,7 +671,7 @@ print(&quot;=== structure of the readback dataset&quot;)</code></pre>
 <li>Thus far I have not yet seen anything that would cause me to switch from python to R for plotting or regressions.</li>
 </ul>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Mon Nov  2 01:29:57 2020&quot;</code></pre>
+<pre><code>## [1] &quot;Mon Nov  2 01:52:51 2020&quot;</code></pre>
 <p>Here we go again…</p>
 <hr />
 <p>(more chapters to be added similarly as we proceed with the course!)</p>

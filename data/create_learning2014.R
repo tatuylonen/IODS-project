@@ -39,19 +39,12 @@ surface_columns <- select(data, one_of(surface_questions))
 data$surf <- rowMeans(surface_columns)
 strategic_columns <- select(data, one_of(strategic_questions))
 data$stra = rowMeans(strategic_columns)
-# The exercise instructions don't expressly say what "age" and "points" should
-# be.  Should they be Age and Points, or should they be scaled down similar
-# to Attitude, even though that was not shown in DataCamp.  I'm guessing that
-# they are to be scaled in the same way, as the exercise talks about scaling
-# all combination variables to the original scale.
-# But alas, the teacher's "correct" data set does not scale age and points
-# to the original scale.  So I won't either.
-# data$age = data$Age / 10
-# data$points = data$Points / 10
 
 # Select only the desired fields for the analysis data set
-anal <- select(data, c("gender", "age", "attitude", "deep", "stra", "surf",
-                       "points"))
+anal <- select(data, c("gender", "Age", "attitude", "deep", "stra", "surf",
+                       "Points"))
+colnames(anal)[2] <- "age"
+colnames(anal)[7] <- "points"
 # Exclude observations where the exam points variable is zero from the
 # analysis data set
 anal <- filter(anal, points != 0)
