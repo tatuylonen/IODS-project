@@ -1,10 +1,63 @@
-## Insert chapter 2 title here
+## Chapter 2: Regression and model validation
+
+### Analysis
+
+XXX Write in the format of an analysis section for a paper?
+
+* Describe the dataset, mention where it can be found. https://www.mv.helsinki.fi/home/kvehkala/JYTmooc/JYTOPKYS3-meta.txt and http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/learning2014.txt
+* Describe its structure and dimensions
+* Show a graphical overview of the data and show summaries of the variables
+  in the data.
+* Describe and interpret the outputs, commenting on the distributions of the
+  variables and the relationships between them.
+* Choose three variables as explanatory variables and fit a regression
+  model where exam points is the target (dependent) variable.  Show a
+  summary of the fitted model and comment and interpret the results.
+  Explain and interpret the statistical test related to the model
+  parameters.  If an explanatory variable in your model does not have
+  a statistically significant relationship with the target variable,
+  remove the variable from the model and fit the model again without
+  it.
+* Using a summary of your fitted model, explain the relationship between
+  the chosen explanatory variables and the target variable (interpret the
+  model parameters).  Explain and interpret the multiple R squared of the model.
+* Produce the following diagnostic plots: Residuals vs. Fitted values,
+  Normal QQ-plot and Residuals vs. Leverage.  Explain the assumptions of
+  the model and interpret the validity of those assumptions based on the
+  diagnostic plots.
 
 *Describe the work you have done this week and summarize your learning.*
 
 - Describe your work and results clearly.
 - Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
 - Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
+
+### Code and output for the data wrangling exercise
+
+Here is code and output from data/create_learning2014.R:
+
+```{r code=readLines("data/create_learning2014.R")}
+```
+
+### Summary of the work done this week and lessons learned
+
+* I went through the DataCamp exercises.  The platform was simple and
+  easy to use, even though this would not have been my preferred mode
+  of learning.  I would rather have read a description of the R
+  philosophy and how main commands work and then approached it as a
+  programming language.  Now rather than learning the basics we are
+  forced to learn snippets that may be useful in themselves, but we
+  don't learn to understand what options and commands really mean or
+  what the philosophy and basic concepts are.
+* I am becoming increasingly frustrated with the MOOC platform.  This
+  is the most confusing online course I have participated in so far.
+  All the others were on Moodle, so I don't know if the problem is how
+  the material is organized or in the platform.  I'm finding it hard
+  to navigate and hard to figure out what exactly we are supposed to
+  do.  The exercises themselves are not hard.
+* Thus far I have not yet seen anything that would cause me to switch
+  from python to R for plotting or regressions.
+
 
 ```{r}
 date()
