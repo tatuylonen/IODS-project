@@ -457,47 +457,19 @@ summary {
 
 <div id="TOC">
 <ul>
-<li><a href="#introduction-to-open-data-science---course-project">Introduction to Open Data Science - Course Project</a></li>
-<li><a href="#iods-project">IODS-project</a><ul>
-<li><a href="#course-diary">Course diary</a></li>
+<li><a href="#introduction-to-open-data-science---course-project">Introduction to Open Data Science - Course Project</a><ul>
 <li><a href="#chapter-1-about-the-project">Chapter 1: About the project</a></li>
 <li><a href="#chapter-2-regression-and-model-validation">Chapter 2: Regression and model validation</a></li>
+<li><a href="#course-diary">Course diary</a></li>
 </ul></li>
 </ul>
 </div>
 
+<p>This is a temporary project that exists only to complete mandatory classwork for the Open Data Science class at Helsinki University. I expect to hide or remove this repository after December 2020.</p>
+<p>Link to github repository: <a href="https://github.com/tatuylonen/IODS-project">tatuylonen/IODS-project</a></p>
 <hr />
 <div id="introduction-to-open-data-science---course-project" class="section level1">
 <h1>Introduction to Open Data Science - Course Project</h1>
-</div>
-<div id="iods-project" class="section level1">
-<h1>IODS-project</h1>
-<p>This is a temporary project that exists only to complete mandatory classwork for the Open Data Science class at Helsinki University. I expect to hide or remove this repository after December 2020.</p>
-<p>Link to github repository: <a href="https://github.com/tatuylonen/IODS-project">tatuylonen/IODS-project</a></p>
-<div id="course-diary" class="section level2">
-<h2>Course diary</h2>
-<div id="week-1" class="section level3">
-<h3>Week 1</h3>
-<p>Thoughts after the first week:</p>
-<ul>
-<li>Created IODS-project repository</li>
-<li>Installed R and Rstudio on Ubuntu 20.04 (Linux). Rstudio (latest 1.3.1093) keeps crashing very frequenty. R seems to work. For now I’m using Rscript to generate HTML from the .Rmd files.</li>
-<li>I’ve used github for years so that part was easy.</li>
-<li>Rstudio did not clone the github repository as I would like. It did not store the username in the cloned repository correctly. Thus manual <code>git pull</code> or <code>git push</code> did not work properly with SSH keys (it asked for git username and password). I had to tweak it manually to make SSH keys work correctly.</li>
-<li>The actual information on the lecture could have been presented much faster. I will probably read the information from the book/web pages/transcripts in the coming weeks rather than listening to lectures.</li>
-</ul>
-</div>
-<div id="week-2" class="section level3">
-<h3>Week 2</h3>
-<p>Thoughts for the second week:</p>
-<ul>
-<li>It took some time to find out how to use R. I’m not a fan of its programming language syntax, but it certainly seems useful for various statistical and plotting tasks once you learn the different libraries. The challenge is that you need to become familiar with a number of libraries. In some sense python, pandas, scikit, and matplotlib still feels easier for me.</li>
-<li>I’ve used various types of linear regression many times in the past (least squares, Lasso, Ridge), but haven’t really looked at significance analysis and the distribution of residual errors in the past. I think that analysis may turn out to be a useful tool for me in the future. I would probably implement in Python for my machine learning applications rather than use R though.</li>
-<li>Rmarkdown is kind of a cool idea and nice for prototyping or coursework, but I still fail to see how to utilize it for an academic paper. The nice thing is that it leaves a trail that makes repeating the procedure easy.</li>
-</ul>
-<hr />
-</div>
-</div>
 <div id="chapter-1-about-the-project" class="section level2">
 <h2>Chapter 1: About the project</h2>
 <p>This repository is for an introductory open data science class for PhD students at University of Helsinki (with some students from other universities). The course is open to everyone, uses open source tools, and emphasizes open science. The statistics part seems fairly elementary, but I could use a brush-up and that is why I signed up for the course.</p>
@@ -811,6 +783,30 @@ points = 3.53 \cdot attitude + 11.64
 <ul>
 <li>I went through the DataCamp exercises. The platform was simple and easy to use, even though this would not have been my preferred mode of learning. I would rather have read a description of the R philosophy and how main commands work and then approached it as a programming language. Now rather than learning the basics we are forced to learn snippets that may be useful in themselves, but we don’t learn to understand what options and commands really mean or what the philosophy and basic concepts are.</li>
 <li>I’ve used various types of linear regression many times in the past (least squares, Lasso, Ridge), but haven’t really looked at significance analysis and the distribution of residual errors in the past. I think that analysis may turn out to be a useful tool for me in the future. I would probably implement in Python for my machine learning applications rather than use R though.</li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="course-diary" class="section level2">
+<h2>Course diary</h2>
+<div id="week-1" class="section level3">
+<h3>Week 1</h3>
+<p>Thoughts after the first week:</p>
+<ul>
+<li>Created IODS-project repository</li>
+<li>Installed R and Rstudio on Ubuntu 20.04 (Linux). Rstudio (latest 1.3.1093) keeps crashing very frequenty. R seems to work. For now I’m using Rscript to generate HTML from the .Rmd files.</li>
+<li>I’ve used github for years so that part was easy.</li>
+<li>Rstudio did not clone the github repository as I would like. It did not store the username in the cloned repository correctly. Thus manual <code>git pull</code> or <code>git push</code> did not work properly with SSH keys (it asked for git username and password). I had to tweak it manually to make SSH keys work correctly.</li>
+<li>The actual information on the lecture could have been presented much faster. I will probably read the information from the book/web pages/transcripts in the coming weeks rather than listening to lectures.</li>
+</ul>
+</div>
+<div id="week-2" class="section level3">
+<h3>Week 2</h3>
+<p>Thoughts for the second week:</p>
+<ul>
+<li>It took some time to find out how to use R. I’m not a fan of its programming language syntax, but it certainly seems useful for various statistical and plotting tasks once you learn the different libraries. The challenge is that you need to become familiar with a number of libraries. In some sense python, pandas, scikit, and matplotlib still feels easier for me.</li>
+<li>I’ve used various types of linear regression many times in the past (least squares, Lasso, Ridge), but haven’t really looked at significance analysis and the distribution of residual errors in the past. I think that analysis may turn out to be a useful tool for me in the future. I would probably implement in Python for my machine learning applications rather than use R though.</li>
+<li>Rmarkdown is kind of a cool idea and nice for prototyping or coursework, but I still fail to see how to utilize it for an academic paper. The nice thing is that it leaves a trail that makes repeating the procedure easy.</li>
 </ul>
 <hr />
 <p>(more chapters to be added similarly as we proceed with the course!)</p>
