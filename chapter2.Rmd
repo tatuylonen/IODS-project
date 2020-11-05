@@ -1,43 +1,228 @@
 ## Chapter 2: Regression and model validation
 
-### Analysis
-
-XXX TODO:
-
-* Describe the dataset, mention where it can be found. https://www.mv.helsinki.fi/home/kvehkala/JYTmooc/JYTOPKYS3-meta.txt and http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/learning2014.txt
-* Describe its structure and dimensions
-* Show a graphical overview of the data and show summaries of the variables
-  in the data.
-* Describe and interpret the outputs, commenting on the distributions of the
-  variables and the relationships between them.
-* Choose three variables as explanatory variables and fit a regression
-  model where exam points is the target (dependent) variable.  Show a
-  summary of the fitted model and comment and interpret the results.
-  Explain and interpret the statistical test related to the model
-  parameters.  If an explanatory variable in your model does not have
-  a statistically significant relationship with the target variable,
-  remove the variable from the model and fit the model again without
-  it.
-* Using a summary of your fitted model, explain the relationship between
-  the chosen explanatory variables and the target variable (interpret the
-  model parameters).  Explain and interpret the multiple R squared of the model.
-* Produce the following diagnostic plots: Residuals vs. Fitted values,
-  Normal QQ-plot and Residuals vs. Leverage.  Explain the assumptions of
-  the model and interpret the validity of those assumptions based on the
-  diagnostic plots.
-
-*Describe the work you have done this week and summarize your learning.*
-
-- Describe your work and results clearly.
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
-
-### Code and output for the data wrangling exercise
+### Data wrangling exercise
 
 Here is code and output from data/create_learning2014.R:
 
 ```{r code=readLines("data/create_learning2014.R")}
 ```
+
+### Analysis exercise
+
+#### Objective of the study
+
+The objective of the study was to analyze how various factors
+influence the student's skills in statistics.
+
+#### Methods
+
+In this exercise we analyzed the dataset described in Kimmo
+Vehkalahti: The Relationship between Learning Approaches and Students'
+Achievements in an Introductory Statistics Course in Finland, 60th
+World Statistics Congress (ISI2015), Rio de Janeiro, Brazil, July
+2015.  The overall approach is covered more deeply in Tait, Entwistle
+and McKune: ASSIST: The Approaches and Study Skills Inventory for
+Students, 1998.
+
+The data set was collected to understand how various factors influence
+students' statistics skills.  It includes data for 183 students.  A
+total of 60 variables were colleted.  The variables can be grouped
+into those relating to the student's background and scholastic
+achievements, deep questions (seeking meaning, relating ideas, use of
+evidence), surface questions (lack of purpose, unrelated memorizing,
+syllabus-boundedness), and strategic questions (organized studying,
+time management).
+
+Student's exam points are taken as measuring the level of the
+student's skill that we try to explain using the other variables.  For
+this analysis, we chose to use linear least squares regression using
+the student's attitude and the averaged answers to surface questions
+and strategic questions as explanatory variables.  We chose to not
+include deep questions, age, or gender as a possible explanatory variables
+because the assignment instructions said we should use three
+variables; extending the analysis to include additional variables
+would be straightforward.
+
+We additionally analyze the significance of the results using the t
+statistic, including a look at the distribution of the regression
+errors and whether their distribution is approximately normal to verify
+that the significance testing methods chosen can be used in this
+situation.
+
+The analysis was performed using R (version 3.6.3).  The R scripts and
+their output are included below.
+
+### Data preprocessing
+
+The original data set can be found
+[here](http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt)
+and its detailed description
+[here](https://www.mv.helsinki.fi/home/kvehkala/JYTmooc/JYTOPKYS3-meta.txt).
+
+We preprocessed the data by averaging the answers to the deep
+questions, surface questions, and strategic questions.  A sum of the
+answers had already been precomputed, so the sums were simply divided
+by the number of values (10) in each case.  Additionally, student's
+exam points, general attitude towards statistics, age, and gender were
+included as possible explanatory variables.
+
+The data preprocessing was done using the script built for the data
+wrangling exercise, ``data/create_learning2014.R``, shown above.
+
+Observations where the exam points are zero were excluded from the
+analysis.  This left 166 observations.
+
+To get a quick overview of the data and the relationships between
+points and the possible explanatory variables, we first plot points
+against each variable.
+
+```{r}
+library(ggplot2)
+data <- read.csv("data/analysis-dataset.csv")
+p <- ggplot(data, aes(x=deep, y=points)) + geom_point() + geom_smooth(method=lm)
+p
+p <- ggplot(data, aes(x=surf, y=points)) + geom_point() + geom_smooth(method=lm)
+p
+p <- ggplot(data, aes(x=stra, y=points)) + geom_point() + geom_smooth(method=lm)
+p
+p <- ggplot(data, aes(x=attitude, y=points)) + geom_point() + geom_smooth(method=lm)
+p
+p <- ggplot(data, aes(x=age, y=points)) + geom_point() + geom_smooth(method=lm)
+p
+p <- ggplot(data, aes(x=gender, y=points)) + geom_point() + geom_smooth(method=lm)
+p
+```
+
+It is clear that gender as a two-category variable is not suitable for
+linear regression.  The data also contains relatively few observations
+for age above about 27, so it is probably not a very helpful
+explanatory variable either.  Also the deep questions have most
+averages concentrated between 3 and 5, so it might be less useful for
+regression than the other variables; it also seems to have little
+influence on points based on the regression line.  These observations
+contributed to choosing attitude, surf, and stra for our analysis.
+
+#### Analysis
+
+First, we compute a linear least squares regression, trying to explain
+points using the students' attitude and the averaged answers for the
+surface and strategic questions.
+
+```{r}
+library(dplyr)
+data <- read.csv("data/analysis-dataset.csv")
+model <- lm(points ~ attitude + surf + stra, data=data)
+summary(model)
+```
+
+For statistically significant results we would expect p < 0.05.  The
+estimated fit shows a positive coefficient for attitude (3.68, p=1.9 *
+10<sup>-8</sup>, which is statistically significant).  It also shows a
+negative coefficient for surface questions and a positive cofficient
+for strategic questions, but these are not statistically significant
+(p=0.47 and p=0.12, respectively).
+
+The t statistic used for significance testing in this linear regression
+assumes that the distribution of errors follows the normal
+distribution.  To validate this assumption, we first plot the
+residuals.
+
+```{r}
+library(dplyr)
+data <- read.csv("data/analysis-dataset.csv")
+model <- lm(points ~ attitude + surf + stra, data=data)
+plot(model)
+```
+
+The residuals vs. fitted plot shows no obvious pattern that would
+invalidate the p values. For a normal distribution we would expect the
+highest concentration of residuals around zero and the residuals
+should be independent of the fitted value. There is a small cluster of
+negative residuals near 24-27 and at extreme fitted values the
+residuals tend to be negative.  However this effect seems small enough
+to not cause significant concern.
+
+From the Q-Q plot we would expect residual distribution to match the
+theoretical distribution.  we can see that while the regression seems
+to work fairly well for most data points, extreme errors on both sides
+tend to be more negative than predicted by a normal distribution.
+However the deviation is not very big.  Overall, the plot looks to me
+as sufficiently consistent with a bounded normal distribution to
+consider the p values reasonably reliable, but some caution woul be
+warranted.
+
+Finally, the residuals vs. leverage plot for a normal distribution
+should show the same spread regardless of leverage and the
+standardized residual density should follow a normal distribution.
+This appears to hold reasonably well in this case, though it is also
+possible that the spread decreases with leverage.  There are too few
+data points at high leverage to be sure.  Generally I would say the
+plot is consistent with the assumption of an approximately normal
+distribution of residuals.
+
+We will now remove the variables that are not statistically
+significant from the regression.  Thus, we compute the regression
+against just attitude.
+
+```{r}
+library(dplyr)
+data <- read.csv("data/analysis-dataset.csv")
+model <- lm(points ~ attitude, data=data)
+summary(model)
+plot(model)
+```
+
+There is little change in the coefficient of attitude compared to the
+previous regression (now 3.53, was 3.68).  Its statistical
+significance has slightly improved (now p=4.12 * 10<sup>-9</sup>,
+which is highly significant).  The intercept 11.64 is also highly
+significant (p=1.95 * 10<sup>-9</sup>).
+
+Looking at the residuals vs fitted plot, it now looks like a better
+match against the normal distribution, though there seem to be fewer
+than expected samples further out. The Q-Q plot has not changed much,
+or perhaps the negative deviation at extremes has gotten stronger.
+
+Given the very high significance from the t test and the approximate
+conformance with the normal distribution, it seems likely that the
+result for attitude truly is significant.  However, I would not trust
+the absolute p value as there is some deviation from a normal
+distribution.  I would seek to confirm the p value using nonparametric
+tests if submitting for a peer-reviewed scientific publication.
+
+Finally, we try to analyze the correlation and explanatory power of
+attitude on points.  For this, we use the Pearson correlation
+coefficient and use R<sup>2</sup> to measure explanatory power.  This
+assumes a normal distribution.
+
+```{r}
+library(dplyr)
+data <- read.csv("data/analysis-dataset.csv")
+r = cor(data$attitude, data$points, method="pearson")
+print(r)
+print(cat("correlation R", r, "\n"))
+print(cat("R^2", r * r, "\n"))
+```
+
+The R<sup>2</sup> value of 0.19 suggests that attitude explains about 19% of the
+variance in points.
+
+#### Conclusion
+
+The student's attitude toward statistics seems to have a statistically
+significant relationship with the student's points on the exam that
+can be approximated with a linear model:
+$$
+points = 3.53 \cdot attitude + 11.64
+$$
+
+This model explains about 19% of the variance in points.  About 81% of
+variance is not explained by this model.
+
+It should be noted that we have not analyzed whether higher points are
+caused by attitude or vice versa, or if the results could be better
+explained by some other common couse.  We have merely detected a
+correlation.
 
 ### Summary of the work done this week and lessons learned
 
@@ -49,18 +234,9 @@ Here is code and output from data/create_learning2014.R:
   forced to learn snippets that may be useful in themselves, but we
   don't learn to understand what options and commands really mean or
   what the philosophy and basic concepts are.
-* I am becoming increasingly frustrated with the MOOC platform.  This
-  is the most confusing online course I have participated in so far.
-  All the others were on Moodle, so I don't know if the problem is how
-  the material is organized or in the platform.  I'm finding it hard
-  to navigate and hard to figure out what exactly we are supposed to
-  do.  The exercises themselves are not hard.
-* Thus far I have not yet seen anything that would cause me to switch
-  from python to R for plotting or regressions.
-
-
-```{r}
-date()
-```
-
-Here we go again...
+* I've used various types of linear regression many times in the past
+  (least squares, Lasso, Ridge), but haven't really looked at
+  significance analysis and the distribution of residual errors in the
+  past.  I think that analysis may turn out to be a useful tool for me
+  in the future.  I would probably implement in Python for my machine
+  learning applications rather than use R though.

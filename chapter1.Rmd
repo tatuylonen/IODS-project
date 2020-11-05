@@ -1,10 +1,11 @@
-## About the project
+## Chapter 1: About the project
 
-This is an introductory open data science course for PhD students at
-University of Helsinki (with some students from other universities).
-The course is open to everyone, uses open source tools, and emphasizes
-open science.  The statistics part seems fairly elementary, but I
-could use a brush-up and that is why I signed up for the course.
+This repository is for an introductory open data science class for PhD
+students at University of Helsinki (with some students from other
+universities).  The course is open to everyone, uses open source
+tools, and emphasizes open science.  The statistics part seems fairly
+elementary, but I could use a brush-up and that is why I signed up for
+the course.
 
 The course seems to cover github, R, Rstudio, linear and logistic
 regression, dimensionality reduction, clustering, hypothesis testing
