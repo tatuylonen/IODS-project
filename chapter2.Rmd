@@ -223,20 +223,3 @@ It should be noted that we have not analyzed whether higher points are
 caused by attitude or vice versa, or if the results could be better
 explained by some other common couse.  We have merely detected a
 correlation.
-
-### Summary of the work done this week and lessons learned
-
-* I went through the DataCamp exercises.  The platform was simple and
-  easy to use, even though this would not have been my preferred mode
-  of learning.  I would rather have read a description of the R
-  philosophy and how main commands work and then approached it as a
-  programming language.  Now rather than learning the basics we are
-  forced to learn snippets that may be useful in themselves, but we
-  don't learn to understand what options and commands really mean or
-  what the philosophy and basic concepts are.
-* I've used various types of linear regression many times in the past
-  (least squares, Lasso, Ridge), but haven't really looked at
-  significance analysis and the distribution of residual errors in the
-  past.  I think that analysis may turn out to be a useful tool for me
-  in the future.  I would probably implement in Python for my machine
-  learning applications rather than use R though.

@@ -23,6 +23,14 @@ Thoughts after the first week:
 
 Thoughts for the second week:
 
+* I went through the DataCamp exercises.  The platform was simple and
+  easy to use, even though this would not have been my preferred mode
+  of learning.  I would rather have read a description of the R
+  philosophy and how main commands work and then approached it as a
+  programming language.  Now rather than learning the basics we are
+  forced to learn snippets that may be useful in themselves, but we
+  don't learn to understand what options and commands really mean or
+  what the philosophy and basic concepts are.
 * It took some time to find out how to use R.  I'm not a fan of its
   programming language syntax, but it certainly seems useful for various
   statistical and plotting tasks once you learn the different libraries.
