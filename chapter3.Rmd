@@ -1,0 +1,379 @@
+## Chapter 3: Logistic regresion
+
+### Data wrangling
+
+See the script ``create_alc.R`` in the [data directory on
+github](https://github.com/tatuylonen/IODS-project/tree/master/data).
+
+### Analysis
+
+In this exercise we analyzed how students' alcohol usage can be
+predicted using other variables in the data set.  The data set is the
+[Student Performance Data
+Set](https://archive.ics.uci.edu/ml/datasets/Student+Performance) from
+the Machine Learning Repository at UC Irwine.  The dataset is
+described in P. Cortez and A. Silva: Using Data Mining to Predict
+Secondary School Student Performance.  In A. Brito and J. Teixeira
+(eds): Proceedings of 5th FUture BUsiness TEChnology Conference
+(FUBUTEC 2008), pp. 5-12, Porto, Portugal, April 2008.
+
+#### (2) Loading data and describing it
+
+First, let's look at an overview of the data.  Looking at available
+field names, we select a few fields as potential candidates for
+further investigation.
+
+```{r}
+library(dplyr)
+library(GGally)
+library(ggplot2)
+
+alc <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/alc.txt")
+
+# Print column names
+colnames(alc)
+
+# Print overall structure of the data
+str(alc)
+```
+
+The data includes numerous factors describing the the student's
+background and lifestyle, as well problems with the student's studies,
+such as failed classes or absences, and the student's alcohol usage.
+Our task is to study the relationship between high/low alcohol
+consumption and the other data.  In total, the data set includes 382
+observations for 35 variables.
+
+#### (3) Selecting four variables and hypotheses
+
+Looking at the data, I decided to choose the following variables for
+closer inspection:
+
+* Medu (Mother's education) - it is conceivable parent's education
+  could have an influence (generally higher education of parents correlates
+  with school success, I think)
+* Fedu (Father's education) - same reason
+* goout (How much goes out with friends - people often drink when they go out)
+* famrel (Quality of family relationships) - conceivably this could have an
+  influence, for example kids of problem families having more problems of
+  their own (i.e., negative correlation in this case).
+
+#### (4) Graphical and numerical analysis of the variables
+
+Let's now look at them graphically using scatterplots (with some position
+jitter to make the point density more visible, given the discrete
+valus):
+
+```{r}
+ggplot(alc, aes(x=Medu, y=alc_use)) + geom_point(shape=1, position=position_jitter(width=0.5, height=0.5)) + geom_smooth(method=lm)
+ggplot(alc, aes(x=Fedu, y=alc_use)) + geom_point(shape=1, position=position_jitter(width=0.5, height=0.5)) + geom_smooth(method=lm)
+ggplot(alc, aes(x=goout, y=alc_use)) + geom_point(shape=1, position=position_jitter(width=0.5, height=0.5)) + geom_smooth(method=lm)
+ggplot(alc, aes(x=famrel, y=alc_use)) + geom_point(shape=1, position=position_jitter(width=0.5, height=0.5)) + geom_smooth(method=lm)
+```
+
+Let's also look at the data numerically using covariances.
+
+```{r}
+# Covariances help us understand the relationship between different variables.
+sub <- select(alc, one_of(c("alc_use", "Medu", "Fedu", "goout", "famrel")))
+cov(sub, sub)
+```
+
+We can see that alc_use has a covariance of 0.43 with ``goout`` and
+``-0.11`` with famrel, while the covariances with ``Medu`` and
+``Fedu`` are small.
+
+Visually and based on the linear regression line, it does not look
+like parents' education has much impact on alcohol use.  Nevertheless,
+they might have an impact when conditioning on other variables or
+after eliminating the impact of other variables, so let's keep them in
+the analysis.  Going out and family relationships, however, show a
+clear impact.
+
+#### (5) Logistic regression
+
+Let's now focus on high alcohol use, i.e., the binarized variable
+``high_use``, and use logistic regression to analyze the impact of the
+selected variables on it.  We will use the bootstrap method and
+
+```{r}
+library(boot)
+
+m <- glm(high_use ~ Medu + Fedu + goout + famrel, data=alc, family="binomial")
+summary(m)
+```
+
+Looking at the significance level of the coefficients, we can see that
+``Medu`` and ``Fedu`` are not statistically significant, while
+``goout`` and ``famrel` are statistically significant at the p=0.01
+level.  Let's run the regression again but without ``Medu`` and
+``Fedu``.
+
+```{r}
+library(boot)
+
+m <- glm(high_use ~ goout + famrel, data=alc, family="binomial")
+summary(m)
+```
+
+We can see that ``goout`` and ``famrel`` are still statistically
+significant at the p=0.01 level, with coefficients of 0.80 and -0.42,
+respectively.  Their standard errors are at most of 1/3 of the
+absolute value of the means.
+
+Let's now look at the coefficients and their confidence intervals
+after exponentiation.  Exponentiation effectively coverts addition
+into multiplication, and coefficients >1 indicate positive impact on
+``high_use`` while coefficients <1 indicate negative impact on
+``high_use``.
+
+```{r}
+OR <- coef(m) %>% exp
+OR
+CI <- exp(confint(m))
+CI
+cbind(OR, CI)
+```
+
+We can see that the results are in line with our hypothesis and the
+results we got with non-exponentiated coefficients (i.e., negative
+value there corresponds to a value <1 in after exponentiation).
+
+The exponentiated coefficients relate directly to the odds ratios.
+Essentially, in this case, an increase in ``goout`` by increases the
+odds by a factor of 2.2, and an increase in ``famrel`` decreases the
+odds by a factor of 0.66.  The confidence intervals of these odds
+ratios are given directly by the confidence intervals for the
+exponentiated coefficients as reported by ``exp(confint(m))`` above.
+
+#### (6) Predictive power and cross tabulation
+
+Let's now explore the predictive power of the model.
+
+```{r}
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# Predict the probability of high_use using the model
+probabilities <- predict(m, type="response")
+alc <- mutate(alc, probability=probabilities)
+alc <- mutate(alc, prediction=probability >= 0.5)
+
+# Let's look at ten samples and how they were predicted vs. actual high_use
+select(alc, high_use, prediction, Medu, Fedu, goout, famrel) %>% tail(10)
+
+# Let's also create the confusion matrix for the prediction
+table(high_use=alc$high_use, prediction=alc$prediction)
+```
+
+Based on the ten samples, we see 8 correct predictions, one Type I
+error, and one Type II error.  Looks reasonable.  The confusion matrix
+shows that the prediction missed 70 cases of high alcohol use and
+correctly predicted 42.
+
+Let's also look at a scatterplot of the predictions vs. actual values
+(though this is not very useful as we only have four possible
+combinations of values - but a plot with position jitter will slow
+something).
+
+```{r}
+ggplot(alc, aes(x=prediction, y=high_use)) + geom_point(shape=1, position=position_jitter(width=0.5, height=0.5))
+```
+
+The plot supports our earlier analysis of the confusion matrics.
+
+#### (7) Cross-validation
+
+Let's now use 10-fold cross-validation to estimate how sensitive the
+model is to sampling of the data.  (Loss function was already defined
+above)
+
+```{r}
+cv <- cv.glm(data=alc, cost=loss_func, glmfit = m, K = 10)
+
+# average number of wrong predictions in the cross validation, e.g., error
+cv$delta[1]
+```
+
+The cross validation indicates an error of 0.25 for my model.  This is
+better than the error of the model introduced in DataCamp (0.26).
+(Note, however, that due to the random nature of cross-validation, and
+using only 10-fold cross validation as mandated by the exercise, the
+accuracy of these errors is not very high and the errors will randomly
+vary somewhat from run to run.)
+
+#### (8) Comparing different models using cross-validation
+
+Let's now see how the model error behaves as the number of variables
+decreases.  For this analysis we'll first use all variables (except
+``high_use``, ``alc_use``, ``Dalc``, ``Walc``, ``probability``, and
+``prediction``) as explanatory variables, and then start removing
+variables that have low significance.  Finally, we will collect the
+cross-validation errors and plot the change in error as a function of
+the number of variables removed.  We'll use 30-fold cross-validation
+to reduce the estimation error while keeping running times reasonable.
+
+```{r}
+# These columns are always excluded
+always_exclude = c("high_use", "alc_use", "Dalc", "Walc",
+  "prediction", "probability")
+
+# Dataframe where we collect the errors from each step in simplification
+# (this is updated by the step() function)
+results = data.frame(count=integer(), error=double(), last=character())
+
+# Estimate a model that excludes the variables given as argument (plus the
+# variables that are always excluded), performs cross-validation to estimate
+# the model error, and collects the errors into ``results``.
+step <- function(additional_excludes) {
+  excludes <- c(always_exclude, additional_excludes)
+  cols <- colnames(alc)[!colnames(alc) %in% excludes]
+  formula_text <- paste("high_use ~ ", paste(cols, collapse=" + "))
+  formula = as.formula(formula_text)
+  print(formula_text)
+  m <- glm(formula, data=alc)
+  probabilities <- predict(m, type="response")
+  alc <- mutate(alc, probability=probabilities)
+  alc <- mutate(alc, prediction=probability >= 0.5)
+  cv <- cv.glm(data=alc, cost=loss_func, glmfit=m, K=30)
+  error <- cv$delta[1]  # error
+  count <- length(additional_excludes)
+  if (length(additional_excludes) == 0) {
+    last = "<none>"
+  } else {
+    last <- additional_excludes[[length(additional_excludes)]]
+  }
+  results <<- rbind(results, data.frame(count, error, last))
+  return(m)
+}
+
+# Perform one step for the exercise.  We can add steps by adding more fields
+# to be excluded (as many as we like).
+m <- step(c())  # famsup has lowest significance
+m <- step(c("famsup"))
+m <- step(c("famsup", "schoolsup"))
+m <- step(c("famsup", "schoolsup", "traveltime"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus", "address"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus", "address", "age"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus", "address", "age", "guardian"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus", "address", "age", "guardian", "romantic"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus", "address", "age", "guardian", "romantic", "higher"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus", "address", "age", "guardian", "romantic", "higher", "paid"))
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus", "address", "age", "guardian", "romantic", "higher", "paid",
+  "nursery"))
+summary(m)
+results
+```
+
+This leaves us with four variables, ``goout``, ``absences``, ``sex``,
+and ``famrel`` that are all statistically highly significant (at
+p=0.001 level).  The prediction error is at the 0.21 level.  For the
+fun of it, let's see what happens if we remove more.
+
+```{r}
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus", "address", "age", "guardian", "romantic", "higher", "paid",
+  "nursery", "famrel"))
+summary(m)
+results
+```
+
+Turns out prediction error did not really change from removing
+``famrel`` (even though it was statistically highly significant).
+Let's see what happens if we not remove ``sex``, the next least
+significant variable.
+
+```{r}
+m <- step(c("famsup", "schoolsup", "traveltime", "Fjob", "Fedu",
+  "Fjob", "famsize", "G2", "failures", "internet", "G1", "G3", "studytime",
+  "activities", "school", "health", "Mjob", "Medu", "freetime", "reason",
+  "Pstatus", "address", "age", "guardian", "romantic", "higher", "paid",
+  "nursery", "famrel", "sex"))
+summary(m)
+results
+```
+
+This time we see a significant increase in error, to the 0.25 level.
+We thus conclude that ``goout``, ``absences``, and ``sex`` is the best
+combination that we can get to using this method.  It is, however,
+possible that we are at a local optimum and different choices earlier
+would have resulted in a better final result.  However I think that is
+unlikely.
+
+Let's finish with a plot of the error as a function of the number of variables
+removed.
+
+```{r}
+data = select(results, count, error)
+plot(data$count, data$error,
+  xlab="variables removed", ylab="error") + title(
+    "Prediction error vs. number of variables removed")
+```

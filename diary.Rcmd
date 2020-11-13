@@ -46,3 +46,24 @@ Thoughts for the second week:
 * Rmarkdown is kind of a cool idea and nice for prototyping or coursework,
   but I still fail to see how to utilize it for an academic paper.  The nice
   thing is that it leaves a trail that makes repeating the procedure easy.
+
+### Week 3
+
+Thoughts after the third week
+
+* I'm becoming frustrated.  I read throught the chapters of the book,
+  but found them too general and vague, lacking precise analysis and
+  description of the topics.  Perhaps I'd prefer a more mathematical
+  approach to the topics.
+* I'm finding I really dislike R syntax and the study approach taken
+  in the data camp exercises.  They are not hard, but they are
+  performing tasks without first gaining an understanding of the
+  available commands and operations.  We haven't look at even the
+  basic concepts of the *programming language* that R is, yet we are
+  learning and memorizing snippets in the hope that they might be used
+  for something useful.  As someone with a long programming
+  background, I'm finding this approach very frustrating, inefficient,
+  and annoying.  I'm waiting for a book on R programming to arrive.
+* I do appreciate the graphics and significant testing that is easily
+  available with R packages.
+* The Super-Bonus exercise was fun.
