@@ -105,7 +105,7 @@ summary(m)
 
 Looking at the significance level of the coefficients, we can see that
 ``Medu`` and ``Fedu`` are not statistically significant, while
-``goout`` and ``famrel` are statistically significant at the p=0.01
+``goout`` and ``famrel`` are statistically significant at the p=0.01
 level.  Let's run the regression again but without ``Medu`` and
 ``Fedu``.
 
@@ -202,7 +202,8 @@ better than the error of the model introduced in DataCamp (0.26).
 (Note, however, that due to the random nature of cross-validation, and
 using only 10-fold cross validation as mandated by the exercise, the
 accuracy of these errors is not very high and the errors will randomly
-vary somewhat from run to run.)
+vary somewhat from run to run. I've also seen runs where it is higher
+than 0.26.)
 
 #### (8) Comparing different models using cross-validation
 
@@ -212,8 +213,9 @@ decreases.  For this analysis we'll first use all variables (except
 ``prediction``) as explanatory variables, and then start removing
 variables that have low significance.  Finally, we will collect the
 cross-validation errors and plot the change in error as a function of
-the number of variables removed.  We'll use 30-fold cross-validation
-to reduce the estimation error while keeping running times reasonable.
+the number of variables removed.  We'll use 29-fold cross-validation
+to reduce the estimation error while keeping running times reasonable
+(R warns about K=30; using 29 instead reduces garbage in this report).
 
 ```{r}
 # These columns are always excluded
@@ -232,12 +234,11 @@ step <- function(additional_excludes) {
   cols <- colnames(alc)[!colnames(alc) %in% excludes]
   formula_text <- paste("high_use ~ ", paste(cols, collapse=" + "))
   formula = as.formula(formula_text)
-  print(formula_text)
   m <- glm(formula, data=alc)
   probabilities <- predict(m, type="response")
   alc <- mutate(alc, probability=probabilities)
   alc <- mutate(alc, prediction=probability >= 0.5)
-  cv <- cv.glm(data=alc, cost=loss_func, glmfit=m, K=30)
+  cv <- cv.glm(data=alc, cost=loss_func, glmfit=m, K=29)
   error <- cv$delta[1]  # error
   count <- length(additional_excludes)
   if (length(additional_excludes) == 0) {
