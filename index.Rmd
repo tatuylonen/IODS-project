@@ -34,6 +34,11 @@ expect to hide or remove this repository after December 2020.
 
 ***
 
+```{r child = "chapter4.Rmd"}
+```
+
+***
+
 ```{r child = "diary.Rcmd"}
 ```
 

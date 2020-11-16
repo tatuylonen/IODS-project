@@ -1,0 +1,299 @@
+## Chapter 4: Clustering and classification
+
+### Analysis
+
+Let's start by loading the libraries we'll use.
+```{r}
+library(MASS)
+library(ggplot2)
+library(GGally)
+library(corrplot)
+library(dplyr)
+```
+
+#### (2) Loading the Boston dataset from the MASS library
+
+In this exercise we are analyzing the "Boston" dataset from the R MASS
+library.  This example dataset is further described in D. Harrison and
+D.L. Rubinfeld: Hedonic prices and the demand for clean air.
+J. Environ. Economics and Management 5:81-102, 1978.  The data set
+relates to the housing values in the suburbs of Boston and several
+variables that might predict housing prices.
+```{r}
+data("Boston")
+str(Boston)
+summary(Boston)
+```
+
+Thre are a total of 506 observations for 14 variables.  All variables
+have numerical values.
+
+#### (3) Graphical overview of the data
+
+```{r}
+ggpairs(Boston, axislabels="show")
+```
+
+We can see that the distributions of the variables vary quite a bit.
+Some have a neat near-normal distribution, while others are highly
+skewed and far from normally distributed.
+
+Some variables are neatly linearly correlated, while others so
+non-linear correlation (e.g., having a "bump" in the middle in the 2-D
+plot).
+
+We can see from the pairwise plots of the variables that there are
+significant correlations between many of the variables.  In
+particular, if we look at the median house value (``medv``, bottom row
+/ rightmost column), we can see that it might have correlations with
+all or most of the other variables, though in some cases the
+correlation might not be linear (e.g., ``age``, ``dis``, ``zn``).
+
+Let's also plot the correlations between the variables to understand the
+strength of the correlations between each pair of variables:
+
+```{r}
+cor_matrix <- cor(Boston)
+corrplot(cor_matrix, method="circle", type="upper", cl.pos="b", tl.pos="d", tl.cex=0.6)
+```
+
+We can see that ``medv`` has the highest positive or negative
+correlations with, e.g., ``rm`` (average number of rooms per dwelling)
+and ``lstat`` (percentage of population with lower status), but many
+other correlations are also significant.
+
+#### (4) Standardizing the dataset and creating categorical variable for crime rate and divide to train/test sets
+
+Let's then standardize the data set to zero mean and unit standard
+deviation.
+
+```{r}
+# Standardize the test set
+boston_scaled <- as.data.frame(scale(Boston))
+summary(boston_scaled$crim)
+
+# Create a new categorial variable with values High, Medium, Low from
+# the crime rate, replacing variable ``crim`` by ``crime``
+bins = quantile(boston_scaled$crim)
+labels = c("low", "med_low", "med_high", "high")
+crime <- cut(boston_scaled$crim,
+             breaks=bins,
+             labels=labels,
+             include.lowest=TRUE)
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+boston_scaled <- data.frame(boston_scaled, crime)
+str(boston_scaled)
+
+# Divide the dataset to train and test sets, so that 80% of the data belongs
+# to the train set.
+cnt <- nrow(boston_scaled)
+ind <- sample(cnt, size=cnt * 0.8)
+train <- boston_scaled[ind,]
+test <- boston_scaled[-ind,]
+str(train)
+str(test)
+```
+
+#### (5) Fit linear discriminant analysis on the train set
+
+```{r}
+# Linear discriminant analysis for ``crime`` using all other variables as
+# predictor variables
+model = lda(crime ~ ., data=train)
+model
+classes = as.numeric(train$crime)
+plot(model, dimen=2, col=classes, pch=classes)
+```
+
+From the plot we can see that ``high`` is relatively easily separable
+(except from a few ``med_high`` instances), whereas there is more
+difficulty with the other classes when mapped to two-dimensional
+space.  However, they could still be easily separable in the
+higher-dimensional original space.
+
+#### (6) Test LDA prediction
+
+```{r}
+# Save the crime categories from the test set and remove the categorical
+# crime variable from the test set
+correct_classes = test$crime
+test <- dplyr::select(test, -crime)
+str(correct_classes)
+str(test)
+
+# Predict the classes with the LDA model on the test data
+predictions = predict(model, newdata=test)
+
+# Cross-tabulate the correct classes vs. predicted classes.
+table(correct=correct_classes, predicted=predictions$class)
+```
+
+The tabulation shows that a majority of all classifications were
+correct (i.e., they are on the diagonal).  However, many were also
+classified into neighboring classes.  No values were classed more than
+two steps away from the current class.
+
+#### (7) K-means clustering
+
+```{r}
+# Reload the original Boston dataset
+data("Boston")
+
+# Scale the variables to that all are normalized (zero mean and unit standard
+# deviation).
+boston_scaled <- as.data.frame(scale(Boston))
+
+# Calculate distances between the (scaled) observations.  We use the
+# Euclidean distance here (i.e., L2-norm).  Are we supposed to use these
+# distances somehow?  The instructions do not say so.
+dist_eu <- dist(boston_scaled, method="euclidean")
+summary(dist_eu)
+
+# Run k-means on the dataset.
+km <- kmeans(boston_scaled, centers=4)
+
+# Visualize the clustering for a few variable pairs as a sample
+pairs(boston_scaled[6:10], col=km$cluster)
+
+# Investigate the optimal number of clusters.  The "optimal" value is said to
+# be where the WCSS drops radically.  (In real applications with overlapping
+# clusters it is often not quite this simple.)
+k_max = 10
+twcss <- sapply(1:k_max, function(k){kmeans(boston_scaled, k)$tot.withinss})
+
+# Plot the WCSS as a function of the number of clusters.
+qplot(x=1:k_max, y=twcss, geom="line")
+```
+
+We can see from the plot that WCSS drops significantly between 1 and 2
+(though there is additional decrease with more clusters).  Based on
+this, we pick 2 as the optimal number of clusters and run k-means
+again with that number of clusters.  It would not be unreasonable to
+choose a higher number of classes, but there is no additional dramatic
+drops at higher numbers of classes.
+
+```{r}
+# Run k-means again with the "optimal" number of clusters
+km <- kmeans(boston_scaled, centers=2)
+
+# Visualize the clusters (the "optimal" number of them)
+pairs(boston_scaled, col=km$cluster)
+
+# Given that visualizing all pairs is near unreadable, visualize for a small
+# sample of variables.  We could use select() to pick a list of named
+# variables instead, but instructions don't require it.
+pairs(boston_scaled[6:10], col=km$cluster)
+
+```
+
+Looking at the visualized variables, we can see that some
+pairs of variables cluster the data pretty well.  For example,
+``tax``, ``radf``, and ``dis`` all seem to offer relatively good
+classifications.
+
+#### Bonus exercise: Clustering and visualization with arrows
+
+```{r}
+# Reload the original Boston dataset
+data("Boston")
+
+# Scale the variables to that all are normalized (zero mean and unit standard
+# deviation).
+boston_scaled <- as.data.frame(scale(Boston))
+
+# Cluster into 3 clusters using k-means
+km <- kmeans(boston_scaled, centers=3)
+
+# Perform LDA using the clusters as target classes
+lda.fit <- lda(x=boston_scaled, grouping=km$cluster)
+
+# print the lda.fit object
+lda.fit
+
+# Visualize the results using a biplot with arrows
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0,
+         x1 = myscale * heads[,choices[1]],
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads),
+       cex = tex, col="black", pos=3)
+}
+
+# Plot the LDA results using two dimensions, with arrows
+plot(lda.fit, dimen = 2, col=km$cluster, pch=km$cluster)
+lda.arrows(lda.fit, myscale = 1)
+
+# Plot again with much bigger scale so that we can read the labels on the
+# smaller arrows
+plot(lda.fit, dimen = 2, col=km$cluster, pch=km$cluster)
+lda.arrows(lda.fit, myscale = 5)
+
+# Plot again with even bigger scale so that we can read the labels on the
+# smaller arrows
+plot(lda.fit, dimen = 2, col=km$cluster, pch=km$cluster)
+lda.arrows(lda.fit, myscale = 15)
+```
+
+The length of the arrows reflects the directions of the different
+dimensions (variables) relative to the hyperplane chosen for
+visualizing the clusters.  The longer the arrow, the closer it is to
+the direction of the hyperplane; the shorter, the closer it is
+perpendicular to the hyperplane.
+
+It looks like the plane that R chose for visualization (which seems to
+separate the clusters reasonably well) is most parallel to ``rad``
+(the nitrogen oxygen concentration), the second most parallel to
+``tax`` (the accessibility of radial highways), and third most
+parallel to ``age`` (proportion of owner-occupied units built prior to
+1940).
+
+#### Super-Bonus: 3D plots
+
+```{r}
+# Save gold standard classes from the training data
+train_correct <- train$crime
+
+# Recompute the LDA model from the training data
+model_predictors <- dplyr::select(train, -crime)
+dim(model_predictors)
+dim(lda.fit$scaling)
+model <- lda(crime ~ ., data=train)
+
+# Map the datapoints into the visualization space
+matrix_product <- as.matrix(model_predictors) %*% model$scaling
+matrix_product <- as.data.frame(matrix_product)
+
+# Create a 3D plot with color indicating the gold standard crime
+# classes in the train set
+library(plotly)
+plot_ly(matrix_product, x=~LD1, y=~LD2, z=~LD3,
+        type="scatter3d", mode="markers",
+        color=train_correct, marker=list(size=2))
+
+# Create a 3D plot with color indicating the predicted crime classes.  Since
+# the gold data used four classes, we'll predict four classes.
+train_no_crime = dplyr::select(train, -crime)
+km <- kmeans(train_no_crime, centers=4)
+plot_ly(matrix_product, x=~LD1, y=~LD2, z=~LD3,
+        type="scatter3d", mode="markers",
+        color=km$cluster, marker=list(size=2))
+```
+
+Both plots contain the same training points, so their point locations
+mapped to the visualization space are identical.  We can see that the
+green, orange, and blue classes in the original data overlap quite a
+bit and are not well separated.  The prediction, however, produces
+much shaper class boundaries.  This is as expected, because clustering
+is based on a distance to cluster centers.  While there are several
+dimensions not shown in these plots, one could expect these dimensions
+to partially reflect the distance from cluster centers.  This is
+consistent with what we are seeing in the plot for predicted data.
+Except for the sharpening of class boundaries and the selection of a
+different color scheme, the plots are fairly similar.
+
+### Data wrangling
+
+The data wranling script that was part of Exercise 4 can be found in
+my github repository in the ``data`` directory,
+[here](https://github.com/tatuylonen/IODS-project/blob/master/data/create_human.R).
