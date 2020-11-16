@@ -1,4 +1,4 @@
-## Chapter 3: Logistic regresion
+## Chapter 3: Logistic regression
 
 ### Data wrangling
 
