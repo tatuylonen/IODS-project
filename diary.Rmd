@@ -82,3 +82,12 @@ Thoughts after the fourth week
   Ken Kleinman: Using R and RStudio for Data Management, Statistical
   Analysis, and Graphics, 2nd ed, CRC Press, 2015.  The book is helpful
   though.
+
+### Week 5
+
+Thoughts after the fifth week
+
+* I've used PCA previously, but haven't really paid attention to data
+  normalization (perhaps it hasn't been a major issue in my
+  applications).  Nevertheless, this exercise clearly points out how
+  important normalization is in this context.  This is a useful takeaway.

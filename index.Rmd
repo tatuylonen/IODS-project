@@ -44,5 +44,5 @@ expect to hide or remove this repository after December 2020.
 
 ***
 
-```{r child = "diary.Rcmd"}
+```{r child = "diary.Rmd"}
 ```

@@ -1,46 +1,198 @@
-## Chapter 4: Clustering and classification
+## Chapter 5: Dimensionality reduction techniques
 
-Let's start by loading the libraries we'll use.
+Let's start by loading some libraries might use.
 ```{r}
 library(MASS)
 library(ggplot2)
 library(GGally)
 library(corrplot)
 library(dplyr)
+# Set default figure size
+knitr::opts_chunk$set(fig.width=12, fig.height=8)
 ```
 
 ### Data wrangling
 
-XXX
-* tranform GNI to numeric
-* exclude unneeded variables
-* remove all rows with missing values
-* remove observations which relate to regions instead of countries
-* define the row names of the data by the country names and remove the country name column from the data
-* should have 155 observations and 8 variables
-* save (including row names) in data/human.csv
-
-Let's load the ``human`` dataset.
-```{r}
-human = read.csv("data/human.csv")
-```
-
-XXX
+The data wrangling exercise is performed by the
+``data/create_human.R`` script in my github repository, as specified
+by the instructions.  It can be found
+[here](https://github.com/tatuylonen/IODS-project/blob/master/data/create_human.R).
+The first part of the script was prepared as part of Exercise 4; the
+new code for this Exercise 5 is towards the end of the file.
 
 ### Analysis
 
-XXX
-* (1) show graphical overview of the data
-* show summaries of the variables in the data
-* describe and interpret the output, commenting on the distributions of the variables and relationships between them
-* (2) perform PCA on the non-standardized data
-* show the variability captured by the principal components
-* draw a biplot displaying the observations by the first two principal components (PC1 x, PC2 y), along with arrows representing the original variables
-* (3) standardize the variables and repeat the above analysis.  Interpret the results of both analyses.  Are the results different?  Why or why not?  In clude captions in plots to describe the phenomenons they relate to.
-* (4) Give personal interpretations of the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data
-* (5) load the tea dataset from Factominer.  Explore the data:
-** look at the structure and dimensions of the data and visualize
-** do Multiple Correspondence Analysis to selected columns
-** interpret the results of MCA
-** draw biplot of the analysis
-** explore other plotting options for MCA and comment on the outputs
+Let's start the analysis by loading the dataset we created as part of
+the data wrangling exercise.  It should have 155 observations and 8
+variables, with country as the row name.
+
+```{r}
+human <- read.csv("data/human5.csv", row.name=1)
+```
+
+#### (1) Show graphical overview and summaries of the variables
+```{r}
+# Plot an overview of the relationships and distribution of the variables
+ggpairs(human)
+# Plot correlations of the variables
+corrplot(cor(human))
+# Look at the variables numerically
+str(human)
+summary(human)
+```
+
+We can see that some variables are highly correlated, for example
+``Ado.Birth`` and ``Mat.Mor``.  Some variables are not significantly
+correlated (e.g., ``edu2.FM`` and ``Labo.FM``).  Some variables show
+strong negative correlation, e.g., ``Mat.Mor`` and ``Edu2.FM``).
+
+Looking at the distributions of the variables, ``GNI`` has a very
+large range (581 to 123124), while the other variables have much
+smaller ranges, e.g., ``Edu2.FM`` has a range from 0.1717 to 1.4967.
+
+#### (2) Perform PCA on the original (non-standardized) data
+
+```{r}
+# Perform PCA on the original (non-standardized data)
+pca1 <- prcomp(human)
+summary(pca1)
+```
+
+We can see that the first principal component (PC1) alone captures 99.99% of the
+variance.  Let's plot the observations using PC1 and PC2.
+
+```{r}
+# Draw a biplot of the PCA representation (first two components) with arrows
+biplot(pca1, choices=1:2)
+```
+
+It is easy to see from the plot that PC1 is essentially same as ``GNI``.
+This makes sense, as ``GNI`` had much higher range and variance than the
+other variables (we did not actually plot the variance, but the
+quartiles for the original ``human`` data tell the story).
+
+#### (3) Standardize the variables and repeat the above analysis
+
+```{r}
+# Normalize the mean and variance of each variable
+human_std <- scale(human)
+
+# Perform PCA on the normalized data
+pca2 <- prcomp(human_std)
+summary(pca2)
+```
+
+We can see that PC1 now explains 53.6% of the variance, PC2 16.24%,
+PC3 9.6%, etc.  This is much more sensible.  Let's see the plots.
+This time we also include custom captions for the labels to show what they
+describe and what percentage of variance they cover.
+
+```{r}
+# Draw a biplot of the normalized PCA (first two components) with arrows and
+# and useful captions
+s = summary(pca2)
+pca_pr <- round(100 * s$importance[2,], digits=1)
+pca_lab <- paste0("Human data ", names(pca_pr), " (", pca_pr, "%)")
+biplot(pca2, choices=1:2, xlab=pca_lab[1], ylab=pca_lab[2])
+```
+
+We can see that result is very different from the non-standardized
+case.  This is because PCA identifies the dimensions with the highest
+variance.  When some variable has much higher variance than the
+others, the highest overall variance will be closely aligned with that
+variable, and PC1 will be closely aligned with that variable.  The
+plot will not give very much information about the overall
+relationships of the variables.  The scale of the values for the
+original variable does not necessarily reflect the importance of the
+variable in any way.  If the variables are normalized, each variable
+will have equal weight in how the principal components are selected.
+This usually gives much more useful results.
+
+#### (4) Give your personal interpretations of the first two PCA components
+
+Wwe can see that PC1 and PC2 are not directly aligned with any
+particular variable, even though PC2 has high correlation with
+``Parli.F`` and ``Labo.FM`` and PC1 has high correlation with the
+other variables.
+
+I think we can interpret PC1 as describing variables that relate to
+material and technological wellbeing.  ``Mat.Mor``, ``Ado.Birth``, and
+``Life.Exp`` reflect quality of health care, which probably correlates
+with general technical and scientific prowess.  ``Edu.Exp`` and
+Edu2.FM`` indicate the quality and availability of education, and it
+makes sense that that is correlated with medical well being, health,
+and life expectancy.  ``GNI`` is also correlated with the same axis;
+it describes economic wealth, which usually correlates strongly with
+education and health (higher income enables providing health care and
+education, and education and health care also help achieve higher
+income due to likely having technology, medicines, and other things to
+sell others and the ability to produce them).
+
+On the other hand, PC2 is correlated with ``Parli.F`` and ``Labo.F``,
+which relate to the role of women in the society and particularly to
+the equality of women in the society.  There are countries that are
+wealthy, have good education, and good health care, but where women
+don't have a big role in public life (politics and workplace).  I
+think some resource-rich countries (e.g., oil producers) may fall into
+this category.  It could also have described many Western countries
+quite well just a few decades ago.  While female education seems to be
+strongly correlated with economic and medical well-being, in this data
+it would seem that female participation in politics and labor force
+would not necessarily be so.
+
+#### (5) Multiple correspondence analysis using the tea dataset
+
+Let's first load the tea dataset from FactMineR, look at its
+structure, and visualize the dataset.
+
+```{r}
+# Load the tea dataset from FactoMineR
+library(FactoMineR)
+data(tea)
+# Look at its structure
+str(tea)
+# Visualize the dataset.  There are too many variables to visualize it using
+# ggpairs reasonably.  Let's instead visualize it with a barplot.
+library(miscset)
+ggplotGrid(ncol=4,
+        lapply(colnames(tea),
+          function(col) {
+            ggplot(tea, aes_string(col)) + geom_bar()
+          }))
+```
+
+Let's then do Multiple Correspondence Analysis on the data.  I'm going
+to only calculate it for the ``Tea``, ``How``, ``how``, ``sugar``,
+``where``, and ``lunch`` columns, as trying all columns does not seem
+to work out-of-the-box.
+
+```{r}
+# Extract a subset of the data with only the selected columns
+keep <- c("Tea", "How", "how", "sugar", "where", "lunch")
+tea_time <- select(tea, one_of(keep))
+summary(tea_time)
+str(tea_time)
+# Compute Multiple Correspondence Analysis of the tea data
+mca1 <- MCA(tea_time, graph=FALSE)
+# Print a summary of the model
+summary(mca1)
+```
+
+Looking at the summary, we can see that no dimension explains more
+than 15.3% of the variance, and that the 7th dimension still explains
+7.8%.  Thus there does not appear to be a simple way to map the
+observations to a very low-dimensional space cleanly.
+
+Let's then draw the a biplot containing the variables.  We also
+include the individuals in the same plot.
+
+```{r}
+# Visualize the model using a biplot from the factoextra package
+library(factoextra)
+fviz_mca_biplot(mca1, repel=TRUE, ggtheme=theme_minimal())
+```
+
+We can see that the two first dimensions together account for roughly
+30% of the variance.  Quite a few individuals are mapped to the exact
+same locations.  It seems likely that they have identical values for
+variables that looked at.

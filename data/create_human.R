@@ -6,6 +6,9 @@
 #   http://hdr.undp.org/en/content/human-development-index-hdi
 #   http://hdr.undp.org/sites/default/files/hdr2015_technical_notes.pdf
 
+#### First part of this file was created in Exercise 4.  Part created
+#### in Exercise 5 is towards the end.
+
 library(dplyr)
 
 # (2) Read the data sets into R
@@ -52,3 +55,42 @@ str(human)
 
 # Save in my data folder
 write.csv(human, "data/human.csv")
+
+#### The remainder of this file was created for Exercise 5: Data
+#### reduction techniques
+
+print("===== Start of Exercise 5")
+
+library(stringr)
+
+# We'll start with the "correct" human file provided by the instructors.  Using
+# it makes this easier to follow since it uses the same variable names as
+# used in the instructions (I chose different names in Exercise 4).
+human <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human1.txt")
+str(human)
+
+# (1) Transform the Gross National Income (GNI) variable to numeric.
+# Note that we have renamed it to gni above.
+new_gni <- str_replace(human$GNI, pattern=",", replace="") %>% as.numeric
+human <- mutate(human, GNI = new_gni)
+
+# (2) Exclude unneeded variables
+keep <- c("Country", "Edu2.FM", "Labo.FM", "Edu.Exp", "Life.Exp", "GNI",
+          "Mat.Mor", "Ado.Birth", "Parli.F")
+human <- dplyr::select(human, one_of(keep))
+
+# (3) Remove all rows with missing values
+human <- filter(human, complete.cases(human))
+
+# (4) Remove the observations which relate to regions instead of countries
+last <- nrow(human) - 7
+human <- human[1:last,]
+
+# (5) Define the row names by the country and remove the country name column
+rownames(human) <- human$Country
+human <- dplyr::select(human, -Country)
+str(human)
+rownames(human)
+# 155 observations for 8 variables remain, with country as rowname
+
+write.csv(human, "data/human5.csv")
