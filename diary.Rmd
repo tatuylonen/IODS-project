@@ -1,0 +1,84 @@
+## Course diary
+
+### Week 1
+
+Thoughts after the first week:
+
+* Created IODS-project repository
+* Installed R and Rstudio on Ubuntu 20.04 (Linux).  Rstudio (latest
+  1.3.1093) keeps crashing very frequenty.  R seems to work.  For now
+  I'm using Rscript to generate HTML from the .Rmd files.
+* I've used github for years so that part was easy.
+* Rstudio did not clone the github repository as I would like.  It did not
+  store the username in the cloned repository correctly. Thus manual
+  ``git pull`` or ``git push`` did not work properly with SSH keys (it asked
+  for git username and password).  I had to tweak it manually to make
+  SSH keys work correctly.
+* The actual information on the lecture could have been presented much
+  faster. I will probably read the information from the book/web
+  pages/transcripts in the coming weeks rather than listening to
+  lectures.
+
+### Week 2
+
+Thoughts for the second week:
+
+* I went through the DataCamp exercises.  The platform was simple and
+  easy to use, even though this would not have been my preferred mode
+  of learning.  I would rather have read a description of the R
+  philosophy and how main commands work and then approached it as a
+  programming language.  Now rather than learning the basics we are
+  forced to learn snippets that may be useful in themselves, but we
+  don't learn to understand what options and commands really mean or
+  what the philosophy and basic concepts are.
+* It took some time to find out how to use R.  I'm not a fan of its
+  programming language syntax, but it certainly seems useful for various
+  statistical and plotting tasks once you learn the different libraries.
+  The challenge is that you need to become familiar with a number of
+  libraries.  In some sense python, pandas, scikit, and matplotlib still
+  feels easier for me.
+* I've used various types of linear regression many times in the past
+  (least squares, Lasso, Ridge), but haven't really looked at
+  significance analysis and the distribution of residual errors in the
+  past.  I think that analysis may turn out to be a useful tool for me
+  in the future.  I would probably implement in Python for my machine
+  learning applications rather than use R though.
+* Rmarkdown is kind of a cool idea and nice for prototyping or coursework,
+  but I still fail to see how to utilize it for an academic paper.  The nice
+  thing is that it leaves a trail that makes repeating the procedure easy.
+
+### Week 3
+
+Thoughts after the third week
+
+* I'm becoming frustrated.  I read throught the chapters of the book,
+  but found them too general and vague, lacking precise analysis and
+  description of the topics.  Perhaps I'd prefer a more mathematical
+  approach to the topics.
+* I'm finding I really dislike R syntax and the study approach taken
+  in the data camp exercises.  They are not hard, but they are
+  performing tasks without first gaining an understanding of the
+  available commands and operations.  We haven't look at even the
+  basic concepts of the *programming language* that R is, yet we are
+  learning and memorizing snippets in the hope that they might be used
+  for something useful.  As someone with a long programming
+  background, I'm finding this approach very frustrating, inefficient,
+  and annoying.  I'm waiting for a book on R programming to arrive.
+* I do appreciate the graphics and significant testing that is easily
+  available with R packages.
+* The Super-Bonus exercise was fun.
+
+### Week 4
+
+Thoughts after the fourth week
+
+* These exercises are taking quite a few hours to do.  They are not difficult,
+  but there is a lot of tedious detail.  This is working to teach some
+  rote skills, but the concepts and overall approach in R has not been
+  discussed.  R really looks like a hack, though a lot of people have
+  put a lot of effort into it.
+* I got a book on R, which seems to help somewhat, but it doesn't
+  quite go as deep as I'd like either.  It's Nicholas J. Horton and
+  Ken Kleinman: Using R and RStudio for Data Management, Statistical
+  Analysis, and Graphics, 2nd ed, CRC Press, 2015.  The book is helpful
+  though.
