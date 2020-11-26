@@ -19,7 +19,7 @@ expect to hide or remove this repository after December 2020.
 
 # Introduction to Open Data Science - Course Project
 
-```{r child = "chapter1.Rmd"}
+<!--```{r child = "chapter1.Rmd"}
 ```
 
 ***
@@ -39,9 +39,12 @@ expect to hide or remove this repository after December 2020.
 
 ***
 
-```{r child = "diary.Rcmd"}
+-->
+
+```{r child = "chapter5.Rmd"}
 ```
 
 ***
 
-(more chapters to be added similarly as we proceed with the course!)
+```{r child = "diary.Rcmd"}
+```

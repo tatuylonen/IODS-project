@@ -1,0 +1,46 @@
+## Chapter 4: Clustering and classification
+
+Let's start by loading the libraries we'll use.
+```{r}
+library(MASS)
+library(ggplot2)
+library(GGally)
+library(corrplot)
+library(dplyr)
+```
+
+### Data wrangling
+
+XXX
+* tranform GNI to numeric
+* exclude unneeded variables
+* remove all rows with missing values
+* remove observations which relate to regions instead of countries
+* define the row names of the data by the country names and remove the country name column from the data
+* should have 155 observations and 8 variables
+* save (including row names) in data/human.csv
+
+Let's load the ``human`` dataset.
+```{r}
+human = read.csv("data/human.csv")
+```
+
+XXX
+
+### Analysis
+
+XXX
+* (1) show graphical overview of the data
+* show summaries of the variables in the data
+* describe and interpret the output, commenting on the distributions of the variables and relationships between them
+* (2) perform PCA on the non-standardized data
+* show the variability captured by the principal components
+* draw a biplot displaying the observations by the first two principal components (PC1 x, PC2 y), along with arrows representing the original variables
+* (3) standardize the variables and repeat the above analysis.  Interpret the results of both analyses.  Are the results different?  Why or why not?  In clude captions in plots to describe the phenomenons they relate to.
+* (4) Give personal interpretations of the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data
+* (5) load the tea dataset from Factominer.  Explore the data:
+** look at the structure and dimensions of the data and visualize
+** do Multiple Correspondence Analysis to selected columns
+** interpret the results of MCA
+** draw biplot of the analysis
+** explore other plotting options for MCA and comment on the outputs
