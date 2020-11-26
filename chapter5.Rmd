@@ -119,7 +119,7 @@ I think we can interpret PC1 as describing variables that relate to
 material and technological wellbeing.  ``Mat.Mor``, ``Ado.Birth``, and
 ``Life.Exp`` reflect quality of health care, which probably correlates
 with general technical and scientific prowess.  ``Edu.Exp`` and
-Edu2.FM`` indicate the quality and availability of education, and it
+``Edu2.FM`` indicate the quality and availability of education, and it
 makes sense that that is correlated with medical well being, health,
 and life expectancy.  ``GNI`` is also correlated with the same axis;
 it describes economic wealth, which usually correlates strongly with
