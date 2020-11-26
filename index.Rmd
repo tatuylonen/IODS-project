@@ -12,32 +12,32 @@ output:
 ---
 
 This is a temporary project that exists only to complete mandatory
-classwork for the Open Data Science class at Helsinki University.  I
+classwork for the Open Data Science class at the University of Helsinki.  I
 expect to hide or remove this repository after December 2020.
 
 ***
 
 # Introduction to Open Data Science - Course Project
 
-# --```{r child = "chapter1.Rmd"}
-# ```
+```{r child = "chapter1.Rmd"}
+```
 
-# ***
+***
 
-# ```{r child = "chapter2.Rmd"}
-# ```
+```{r child = "chapter2.Rmd"}
+```
 
-# ***
+***
 
-# ```{r child = "chapter3.Rmd"}
-# ```
+```{r child = "chapter3.Rmd"}
+```
 
-# ***
+***
 
-# ```{r child = "chapter4.Rmd"}
-# ```
+```{r child = "chapter4.Rmd"}
+```
 
-# ***
+***
 
 ```{r child = "chapter5.Rmd"}
 ```
