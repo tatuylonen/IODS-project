@@ -1,16 +1,5 @@
 ## Chapter 6: Analysis of longitudinal data
 
-Let's start by loading some libraries we might use.
-```{r}
-library(ggplot2)
-library(GGally)
-library(corrplot)
-library(dplyr)
-library(tidyr)
-# Set default figure size
-knitr::opts_chunk$set(fig.width=12, fig.height=8)
-```
-
 ### Data wrangling
 
 The data wrangling for Exercise 6 is performed by the
@@ -20,27 +9,25 @@ specified in the instructions.  It can be found
 
 ### Analysis
 
-First, let's load the data sets created by the data wrangling script.
+Let's start by loading some libraries we might use.
+```{r}
+library(ggplot2)
+library(GGally)
+library(corrplot)
+library(dplyr)
+library(tidyr)
+library(lme4)
+# Set default figure size
+knitr::opts_chunk$set(fig.width=12, fig.height=8)
+```
+
+Let's load the data sets created by the data wrangling script
+(we'll do the factor conversion later).
 ```{r}
 RATS <- read.csv("data/meet_RATS.csv", row.name=1)
 RATSL <- read.csv("data/meet_RATSL.csv", row.name=1)
 BPRS <- read.csv("data/meet_BPRS.csv", row.name=1)
 BPRSL <- read.csv("data/meet_BPRSL.csv", row.name=1)
-
-# Convert ID, Group, treatment, subject fields to Factor
-RATS$ID <- factor(RATS$ID)
-RATS$Group <- factor(RATS$Group)
-RATSL$ID <- factor(RATSL$ID)
-RATSL$Group <- factor(RATSL$Group)
-BPRS$treatment <- factor(BPRS$treatment)
-BPRS$subject <- factor(BPRS$subject)
-BPRSL$treatment <- factor(BPRSL$treatment)
-BPRSL$subject <- factor(BPRSL$subject)
-
-str(RATS)
-str(RATSL)
-str(BPRS)
-str(BPRSL)
 ```
 
 #### (1) Implement the analyses of Chapter 8 of MABS using the RATS data
@@ -49,7 +36,13 @@ Ok, so it looks like basically we need to perform the analyses we did
 on Datacamp, but with the datasets swapped.
 
 ```{r}
-# First, look at the data
+# First, convert ID and Group fields to factors
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+RATSL$ID <- factor(RATSL$ID)
+RATSL$Group <- factor(RATSL$Group)
+
+# Let's look at the data
 names(RATSL)
 str(RATSL)
 summary(RATSL)
@@ -137,7 +130,7 @@ ggplot(RATSS,
   scale_shape_manual(values = c(1,2,3)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se, linetype="1"), width=0.3) +
   theme(legend.position = c(0.8,0.8,0.8)) +
-  scale_y_continuous(name = "mean(bprs) +/- se(bprs)")
+  scale_y_continuous(name = "mean(Weight) +/- se(Weight)")
 ```
 
 Let's then check for utliers using a boxplot.  (We should note, however, that
@@ -204,4 +197,124 @@ weight.
 
 #### (2) Implement the analyses of Chapter 9 of MABS uising the BPRS data
 
-XXX to be continued
+Let's then look at analyzing the BPRS (brief psychiatric rating scale)
+data.  We first convert certain fields to factors, look at the data,
+and plot the data.
+
+In analyzing this data, we must first note that **the subject field
+does not uniquely identify the person**.  Instead, the data is
+structured so that the ``subject`` field only identifies a subject
+within each treatment regime (logically one cannot administer the two
+treatments to be compared to the same person simultaneously in this
+kind of experiment).  Also, the Datacamp exercises say the dataset
+contains data for 40 male subjects, but there are only 20 distinct
+values in the ``subject`` field.  For this purpose, I added a
+``uniqueSubject`` field in the data wrangling phase to uniquely
+identify each person, as such unique identification will be needed for
+mixed effects modeling as a random factor.  Our analysis will use this
+field instead of ``subject`` to identify the person, because
+``subject`` does not uniquely identify the individual!
+
+```{r}
+# First, convert the treatment and subject fields to factors
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+BPRSL$treatment <- factor(BPRSL$treatment)
+BPRSL$subject <- factor(BPRSL$subject)
+
+# This field was added in data wrangling to uniquely identify each subject,
+# as discussed above and in the comments in the data wrangling script.
+BPRSL$uniqueSubject <- factor(BPRSL$uniqueSubject)
+
+# Let's look at the data
+names(BPRSL)
+str(BPRSL)
+summary(BPRSL)
+glimpse(BPRSL)
+
+ggplot(BPRSL, aes(x=week, y=bprs, linetype=uniqueSubject)) +
+  geom_line() +
+  scale_linetype_manual(values=rep(1:10, times=4)) +
+  facet_grid(. ~ treatment, labeller=label_both) +
+  scale_y_continuous(name="BPRS", limits=c(min(BPRSL$bprs), max(BPRSL$bprs))) +
+  theme(legend.position="top")
+```
+
+Visually, it looks like there is a downward trend with treatment 1.
+The situation looks less clear for treatment 2.
+
+Let's then try a linear regression.
+```{r}
+# Create a linear regression model
+BPRS_reg <- lm(bprs ~ week + treatment, data=BPRSL)
+# Print a summary of the model
+summary(BPRS_reg)
+```
+
+In this model, it looks like the improvement with time is
+statistically significant, but this model does not show statistical
+significance for the treatment regime.  However, we should note that
+the observations are not independent as we have repeated observations
+from the same individuals, so the assumptions of the significance test
+were violated and it cannot really be relied upon here.
+
+Let's then try to construct a mixed model for the same variables,
+using ``uniqueSubject`` as a random effect.
+
+```{r}
+# Create a random intercept model
+BPRS_ref <- lmer(bprs ~ week + treatment + (1 | uniqueSubject), data=BPRSL,
+                 REML=FALSE)
+# Print the summary of the model
+summary(BPRS_ref)
+```
+
+Let's then construct the model so that we treat both treatment and
+``uniqueSubject`` as random effects.
+
+```{r}
+# Create a random intercept and random slope model
+BPRS_ref1 <- lmer(bprs ~ week + treatment + (week | uniqueSubject),
+                  data=BPRSL, REML=FALSE)
+
+# Print a summary of the model
+summary(BPRS_ref1)
+
+# Perform an ANOVA test on the two models
+anova(BPRS_ref1, BPRS_ref)
+```
+
+It would seem that **the second model fits the data better than the
+first model at the 95% significance level** (p=0.026).
+
+Let's plot again the original BPRS values.
+
+```{r}
+ggplot(BPRSL, aes(x=week, y=bprs, group=uniqueSubject)) +
+  geom_line(aes(linetype=treatment)) +
+  scale_x_continuous(name="Week") +
+  facet_grid(. ~ treatment, labeller=label_both) +
+  scale_y_continuous(name="BPRS") +
+  theme(legend.position="top")
+```
+
+Let's then plot the fit using the second model (``BPRS_ref1``) for comparison.
+
+```{r}
+# Compute the fitted values and add them as a column in RATSL
+Fitted <- fitted(BPRS_ref1, BPRSL)
+
+# Add a new column for the fitted data
+BPRSL <- mutate(BPRSL, Fitted=Fitted)
+
+# Draw a plot of BPRSL with the observed bprs values for each subject
+ggplot(BPRSL, aes(x=week, y=Fitted, group=uniqueSubject)) +
+  geom_line(aes(linetype=treatment)) +
+  scale_x_continuous(name="Week") +
+  facet_grid(. ~ treatment, labeller=label_both) +
+  scale_y_continuous(name="Fitted BPRS") +
+  theme(legend.position="top")
+```
+
+I have to say that using a non-unique subject idenfier in the BPRS
+dataset was a rather devious twist in the exercise.

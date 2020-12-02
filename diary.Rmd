@@ -58,7 +58,7 @@ Thoughts after the third week
 * I'm finding I really dislike R syntax and the study approach taken
   in the data camp exercises.  They are not hard, but they are
   performing tasks without first gaining an understanding of the
-  available commands and operations.  We haven't look at even the
+  available commands and operations.  We haven't looked at even the
   basic concepts of the *programming language* that R is, yet we are
   learning and memorizing snippets in the hope that they might be used
   for something useful.  As someone with a long programming
@@ -109,6 +109,17 @@ Thoughts after the fifth week
   to be performed in the exercise by reference to chapters of the book
   that I did not expect to need for the course and that are not easily
   available.
+* Ok, I was told on the chat area that these chapters are at the end of the
+  MABS special edition, out-of-place.  The table of contents does not reflect
+  this, and apparently the only way to find them and know that they are there
+  is to page through the whole document.  It never occurred to me that the
+  chapters in a PDF document with a table of contents and numbered pages
+  would be out-of-order.
+* I don't know if using a non-unique subject identifier in the BPRS
+  dataset was intentional or not.  It was rather devious.
+* The datacamp exercises seemed to have a few problems, the most
+  serious the incorrect value of ``n`` in computing the standard error.
 * The more I use R, the more I dislike its programming language.  I
-  will admit though that it is quite handy for certain visualization
-  and analysis tasks.
+  will give though that it is quite handy for certain visualization
+  and analysis tasks.  I will probably look into Python and pandas
+  next (I've used matplotlib, numpy, scipy, sklearn, etc. before).
