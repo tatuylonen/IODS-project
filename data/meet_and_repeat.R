@@ -74,3 +74,9 @@ RATSL$Time
 # with the difference, as I've used both data formats in SQL databases
 # and various computer programs many times over the years (most of it in
 # non-statistical contexts though and I haven't used R before this course).
+
+# Save the data
+write.csv(BPRS, "data/meet_BPRS.csv")
+write.csv(RATS, "data/meet_RATS.csv")
+write.csv(BPRSL, "data/meet_BPRSL.csv")
+write.csv(RATSL, "data/meet_RATSL.csv")

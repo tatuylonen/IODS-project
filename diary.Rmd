@@ -91,3 +91,24 @@ Thoughts after the fifth week
   normalization (perhaps it hasn't been a major issue in my
   applications).  Nevertheless, this exercise clearly points out how
   important normalization is in this context.  This is a useful takeaway.
+
+### Week 6
+
+* I definitely hit the low point of motivation and high point of
+  resentment towards this course during Exercise 6.
+* The way the Analysis task was defined in Exercise 6 was in my
+  opinion unacceptable.  It defines the tasks by reference to chapters
+  of the book (MABS), but those chapters are not available in the
+  "special edition" available for the online course and only
+  downloadable through the university library if you haven't used your
+  100 page limit on EBSCO.  I believe the university library is closed
+  due to covid-19 so getting a physical copy from there is out of the
+  question.  It is too late to order from Amazon.  Now I think it is
+  fine to require a book for a course (if the requirement is announced
+  at the beginning of the course), but I detest definining the tasks
+  to be performed in the exercise by reference to chapters of the book
+  that I did not expect to need for the course and that are not easily
+  available.
+* The more I use R, the more I dislike its programming language.  I
+  will admit though that it is quite handy for certain visualization
+  and analysis tasks.

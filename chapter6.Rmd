@@ -1,0 +1,207 @@
+## Chapter 6: Analysis of longitudinal data
+
+Let's start by loading some libraries we might use.
+```{r}
+library(ggplot2)
+library(GGally)
+library(corrplot)
+library(dplyr)
+library(tidyr)
+# Set default figure size
+knitr::opts_chunk$set(fig.width=12, fig.height=8)
+```
+
+### Data wrangling
+
+The data wrangling for Exercise 6 is performed by the
+``data/meet_and_repeat.R`` script in my github repository, as
+specified in the instructions.  It can be found
+[here](https://github.com/tatuylonen/IODS-project/blob/master/data/meet_and_repeat.R).
+
+### Analysis
+
+First, let's load the data sets created by the data wrangling script.
+```{r}
+RATS <- read.csv("data/meet_RATS.csv", row.name=1)
+RATSL <- read.csv("data/meet_RATSL.csv", row.name=1)
+BPRS <- read.csv("data/meet_BPRS.csv", row.name=1)
+BPRSL <- read.csv("data/meet_BPRSL.csv", row.name=1)
+
+# Convert ID, Group, treatment, subject fields to Factor
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+RATSL$ID <- factor(RATSL$ID)
+RATSL$Group <- factor(RATSL$Group)
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+BPRSL$treatment <- factor(BPRSL$treatment)
+BPRSL$subject <- factor(BPRSL$subject)
+
+str(RATS)
+str(RATSL)
+str(BPRS)
+str(BPRSL)
+```
+
+#### (1) Implement the analyses of Chapter 8 of MABS using the RATS data
+
+Ok, so it looks like basically we need to perform the analyses we did
+on Datacamp, but with the datasets swapped.
+
+```{r}
+# First, look at the data
+names(RATSL)
+str(RATSL)
+summary(RATSL)
+glimpse(RATSL)
+
+# Display the data graphically
+ggplot(RATSL, aes(x = Time, y = Weight, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(min(RATSL$Weight), max(RATSL$Weight)))
+```
+
+We can see that rats in Group 1 had consistently lower weight than
+those in Groups 2 and 3.  However, there were only eight rats in Group
+1, four in Group 2, and four in Group 3.  These numbers are so low
+that making any statistical analyses based on them are fraught with
+uncertainty.  That said, we are tasked with analyzing this data.
+
+We can also see that in each group the rats are gaining weight as time passes.
+
+Let's see how the picture changes if we standardize the data for each
+data point (keeping in mind that the number of observations is too low
+to do this with any accuracy).
+
+```{r}
+# Standardize Weight
+RATSL <- RATSL %>%
+  group_by(Time) %>%
+  mutate(stdWeight = (Weight - mean(Weight)) / sd(Weight)) %>%
+  ungroup()
+str(RATSL)
+
+# Plot again with standardized Weight
+ggplot(RATSL, aes(x = Time, y = stdWeight, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  scale_y_continuous(name = "standardized Weight")
+```
+
+We can now see clearly that some rats are growing faster than the
+others.  Where the line goes down, it means that the rat is gaining
+wait slower than the mean of the group, or might even be losing
+weight.
+
+Let's now plot the group means and their error bars.  We should note
+that it is impossible to calculate variance with any accuracy from
+just four observations, and correspondingly the magnitude of the error
+bars is only a very rough estimate that shouldn't be given much
+statistical significance.
+
+```{r}
+# Add mean and standard error computations.  Note that the n in standard error
+# computation should be the number of samples used to compute that mean,
+# not the total number of samples in the whole dataset for all Group/Time
+# combinations (the Datacamp exercise is in error).
+RATSS <- RATSL %>%
+  group_by(Group, Time) %>%
+  summarise(mean = mean(Weight), se = sd(Weight) / sqrt(length(Weight))) %>%
+  ungroup()
+
+# Note: In view of the warning about regrouping above, verify that groups
+# are correct inside summarize
+dim(RATSL)
+X <- RATSL %>% group_by(Group, Time) %>% summarize(cnt=length(Weight)) %>% ungroup()
+X$cnt
+# Yes, this matches what we see in the earlier plots - 8, 4, 4 rats in each
+# group, for each timepoint.  So looks like summarize() worked correctly
+# despite the weird warning.
+
+# Let's glimpse at the data with timepoint means and standard errors.
+# We leave aside the question whether standard error is reliable with
+# just 4 or 8 observations in each grouping...  (it ISN'T very
+# reliable with so few observations)
+glimpse(RATSS)
+
+# Plot the mean profiles for each Group, with error bars
+ggplot(RATSS,
+  aes(x = Time, y = mean, linetype = Group, shape = Group)) +
+  geom_line() +
+  scale_linetype_manual(values = c(1,2,3)) +
+  geom_point(size=3) +
+  scale_shape_manual(values = c(1,2,3)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se, linetype="1"), width=0.3) +
+  theme(legend.position = c(0.8,0.8,0.8)) +
+  scale_y_continuous(name = "mean(bprs) +/- se(bprs)")
+```
+
+Let's then check for utliers using a boxplot.  (We should note, however, that
+the low number of observations makes any outlier detection very unreliable.)
+
+```{r}
+# Quick check for outliers using a boxplot
+RATSB <- RATSL %>%
+  filter(Time > 0) %>%
+  group_by(Group, ID) %>%
+  summarise(mean=mean(Weight) ) %>%
+  ungroup()
+glimpse(RATSB)
+ggplot(RATSB, aes(x = Group, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun.y = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(Weight), weeks 1-8")
+```
+
+We can see that there is a possible outlier in Group 2.  However,
+given that there are only four rats in this group (which is already
+too little data), any variance estimate (and thus standard error and
+the quartiles) is highly suspect, and thus we cannot really justify
+removing any individuals from the data.  They might not be outliers
+at all if we had a bit more data, and being already data-deprived,
+we would be even more so with only three rats.
+
+Let's then see if there is a statistically significant difference
+between the groups.  We'll use the dataset we created with
+the mean for each group, but for the reasons above we did not do outlier
+elimination.  There is a compication here, as the t test only works between
+exactly two groups.  For the purposes of this analysis, we'll lumk groups
+2 and 3 together and compare them againt Group 1.  Let's add an auxiliary
+field for this.
+
+```{r}
+# Create a helper variable indicating whether the observation is in Group 1
+RATSB$isGroup1 <- RATSB$Group == "1"
+
+# Perform a t-test between being in group 1 and not being in group 1
+t.test(mean ~ isGroup1, data=RATSB, var.equal=TRUE)
+
+# Add a baseline from Time 1
+RATSB$baseline <- RATS$WD1
+
+# Fit a linear model with the mean as the response
+fit <- lm(mean ~ baseline + isGroup1, data=RATSB)
+fit
+
+# Compute an analysis of variance table for the fitted model with anova()
+anova(fit)
+```
+
+We can see that the data suggests the baseline (WD1) to be a very
+significant predictor of the group mean weight and being in Group 1
+being significant at 95% level.  However, even ignoring the
+unsuitability of the hypothesis testing method testing method for our
+case (the observations are not independent), we had so few data points
+that the means are inaccurate, and this significance prediction was
+based on the inaccurately computed means.  This adds to uncertainty
+beyond what was considered by hypothesis testing, and we probably
+should not consider being in Group 1 as significant given the baseline
+weight.
+
+#### (2) Implement the analyses of Chapter 9 of MABS uising the BPRS data
+
+XXX to be continued
